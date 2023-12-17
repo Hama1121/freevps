@@ -1,6 +1,7 @@
-name: Build Windows
+name: Windows - RustDesk
 
 on:
+  workflow_dispatch:
   pull_request:
     paths-ignore:
       - README.md
@@ -20,7 +21,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: (true)
+  cancel-in-progress: true
 
 env:
   PYTHON_VERSION: '3.11'
@@ -30,12 +31,15 @@ permissions:
   contents: read
 
 jobs:
+  build:
+    name: Start Building...
+    runs-on: windows-latest
   build-windows:
     if: github.event.pull_request.draft == false
     strategy:
       matrix:
         windows: [windows-2022]
-      fail-fast: (false)
+      fail-fast: false
     runs-on: ${{ matrix.windows }}
 steps:
       - name: Downloading & Installing Essentials
